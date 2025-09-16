@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Расписание | ПДАо-1-25</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* --- Новая темная анимированная тема --- */
+        :root {
+            --bg-color: #1a1a1d;
+            --card-color: #24252a;
+            --text-primary: #f2f2f2;
+            --text-secondary: #9fa2b4;
+            --accent-color: #00bfff; /* DeepSkyBlue */
+            --accent-secondary: #9370db; /* MediumPurple */
+            --border-color: #393a3f;
+            --inactive-bg: rgba(0,0,0,0.2);
+            --inactive-text: #6a6d78;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            padding: 12px;
+        }
+
+        /* --- Шапка --- */
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+            padding: 16px;
+        }
+
+        .header h1 {
+            font-size: 1.6em;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .live-info {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            font-size: 0.9em;
+            color: var(--text-secondary);
+        }
+        
+        #current-time {
+            animation: pulse 2s infinite ease-in-out;
+        }
+
+        /* --- Расписание --- */
+        .schedule-day {
+            margin-bottom: 24px;
+        }
+
+        .day-title {
+            font-size: 1.25em;
+            font-weight: 600;
+            padding-bottom: 10px;
+            margin-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-primary);
+            transition: color 0.3s ease;
+        }
+        
+        .day-title .badge {
+            font-size: 0.7em;
+            font-weight: 500;
+            padding: 4px 10px;
+            border-radius: 12px;
+            background-color: var(--accent-color);
+            color: var(--bg-color);
+        }
+        
+        .day-title.is-today {
+             color: var(--accent-color);
+        }
+
+        /* --- Карточка урока --- */
+        .class-item {
+            display: flex;
+            background-color: var(--card-color);
+            border-radius: 12px;
+            margin-bottom: 12px;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            overflow: hidden;
+            opacity: 0; /* Initially hidden for animation */
+            animation: fadeIn 0.5s ease forwards;
+        }
+        
+        .class-item:hover {
+            transform: scale(1.02);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+            border-color: var(--accent-secondary);
+        }
+
+        .class-item .time {
+            padding: 16px;
+            text-align: center;
+            font-weight: 500;
+            color: var(--text-secondary);
+            border-right: 1px solid var(--border-color);
+            background: rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .class-item .time span {
+             font-size: 0.9em;
+        }
+        
+        .class-item .details {
+            padding: 16px;
+            width: 100%;
+        }
+
+        .subject {
+            font-weight: 500;
+            font-size: 1.05em;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+        }
+        
+        .alternating .subject {
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .teacher, .auditorium {
+            font-size: 0.85em;
+            color: var(--text-secondary);
+        }
+
+        /* --- Состояния карточек --- */
+        .class-item.current-class {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 20px rgba(0, 191, 255, 0.2);
+        }
+        
+        .class-item.next-class {
+            border-color: var(--accent-secondary);
+        }
+        
+        .class-item.past-class {
+            opacity: 0.5;
+        }
+        .class-item.past-class:hover {
+            opacity: 0.6;
+        }
+
+        .inactive-week {
+            background-color: var(--inactive-bg);
+        }
+        .inactive-week .subject {
+            color: var(--inactive-text);
+            text-decoration: line-through;
+        }
+        .inactive-week .teacher, .inactive-week .auditorium {
+             color: var(--inactive-text);
+        }
+
+        /* --- Подвал --- */
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            font-size: 0.8em;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .footer b {
+            color: var(--text-primary);
+        }
+        
+        .footer a {
+            color: var(--accent-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <h1>ПДАо (9 кл)-1-25</h1>
+        <div class="live-info">
+            <span id="current-date">-- сентября</span>
+            <span id="current-time">--:--:--</span>
+        </div>
+    </header>
+
+    <main>
+        <div class="schedule-day" data-day="1">
+            <h2 class="day-title">Понедельник</h2>
+            <div class="class-item" data-start="08:30" data-end="09:50"><div class="time"><span>08:30</span><span>09:50</span></div><div class="details"><div class="subject">Алгебра (прак)</div><div class="teacher">Джолумбекова М.Т.</div><div class="auditorium">Аудитория: 503</div></div></div>
+            <div class="class-item" data-start="10:00" data-end="11:20"><div class="time"><span>10:00</span><span>11:20</span></div><div class="details"><div class="subject">Допризывная подготовка (прак)</div><div class="teacher">Мырзаказы уулу И.</div><div class="auditorium">Аудитория: 503</div></div></div>
+            <div class="class-item alternating" data-start="11:30" data-end="12:50"><div class="time"><span>11:30</span><span>12:50</span></div><div class="details"><div class="subject numerator">Химия (прак)<div class="teacher">Осмонова Ч.</div><div class="auditorium">Аудитория: 503</div></div><div class="subject denominator">Биология (прак)<div class="teacher">Эгешова А.А.</div><div class="auditorium">Аудитория: 503</div></div></div></div>
+        </div>
+        <div class="schedule-day" data-day="2">
+            <h2 class="day-title">Вторник</h2>
+            <div class="class-item alternating" data-start="08:30" data-end="09:50"><div class="time"><span>08:30</span><span>09:50</span></div><div class="details"><div class="subject numerator">Алгебра (прак)<div class="teacher">Джолумбекова М.Т.</div><div class="auditorium">Аудитория: 503</div></div><div class="subject denominator">Геометрия (прак)<div class="teacher">Джолумбекова М.Т.</div><div class="auditorium">Аудитория: 503</div></div></div></div>
+            <div class="class-item" data-start="10:00" data-end="11:20"><div class="time"><span>10:00</span><span>11:20</span></div><div class="details"><div class="subject">Кыргызская литература (прак)</div><div class="teacher">Орозказиева А.</div><div class="auditorium">Аудитория: 503</div></div></div>
+            <div class="class-item alternating" data-start="11:30" data-end="12:50"><div class="time"><span>11:30</span><span>12:50</span></div><div class="details"><div class="subject numerator">Человек и общество (прак)<div class="teacher">Исраилова А.Б.</div><div class="auditorium">Аудитория: 503</div></div><div class="subject denominator">Кыргызская литература (прак)<div class="teacher">Орозказиева А.</div><div class="auditorium">Аудитория: 503</div></div></div></div>
+        </div>
+        <div class="schedule-day" data-day="3">
+            <h2 class="day-title">Среда</h2>
+            <div class="class-item" data-start="08:30" data-end="09:50"><div class="time"><span>08:30</span><span>09:50</span></div><div class="details"><div class="subject">Кыргызский язык (прак)</div><div class="teacher">Орозказиева А.К./Султаналиева М.А.</div><div class="auditorium">Аудитория: 503</div></div></div>
+            <div class="class-item" data-start="10:00" data-end="11:20"><div class="time"><span>10:00</span><span>11:20</span></div><div class="details"><div class="subject">История (прак)</div><div class="teacher">Исраилова А.Б.</div><div class="auditorium">Аудитория: 503</div></div></div>
+            <div class="class-item" data-start="11:30" data-end="12:50"><div class="time"><span>11:30</span><span>12:50</span></div><div class="details"><div class="subject">Иностранный язык (прак)</div><div class="teacher">Казакбаева Г.А.</div><div class="auditorium">Аудитория: 503</div></div></div>
+        </div>
+        <div class="schedule-day" data-day="4">
+            <h2 class="day-title">Четверг</h2>
+            <div class="class-item" data-start="08:30" data-end="09:50"><div class="time"><span>08:30</span><span>09:50</span></div><div class="details"><div class="subject">Русский язык (прак)</div><div class="teacher">Алдашева Э.К.</div><div class="auditorium">Аудитория: 503</div></div></div>
+            <div class="class-item" data-start="10:00" data-end="11:20"><div class="time"><span>10:00</span><span>11:20</span></div><div class="details"><div class="subject">Физика (Астрономия) (прак)</div><div class="teacher">Керимкулова А.Ш.</div><div class="auditorium">Аудитория: 503</div></div></div>
+            <div class="class-item alternating" data-start="11:30" data-end="12:50"><div class="time"><span>11:30</span><span>12:50</span></div><div class="details"><div class="subject numerator">Биология (прак)<div class="teacher">Эгешова А.А.</div><div class="auditorium">Аудитория: 503</div></div><div class="subject denominator">Физика (прак)<div class="teacher">Керимкулова А.Ш.</div><div class="auditorium">Аудитория: 503</div></div></div></div>
+            <div class="class-item" data-start="13:00" data-end="14:20"><div class="time"><span>13:00</span><span>14:20</span></div><div class="details"><div class="subject">Физическая культура</div><div class="teacher">Санатбаев</div><div class="auditorium">Аудитория: 6К</div></div></div>
+        </div>
+        <div class="schedule-day" data-day="5">
+            <h2 class="day-title">Пятница</h2>
+            <div class="class-item alternating" data-start="08:30" data-end="09:50"><div class="time"><span>08:30</span><span>09:50</span></div><div class="details"><div class="subject numerator">Русский язык (прак)<div class="teacher">Алдашева Э.К.</div><div class="auditorium">Аудитория: 503</div></div><div class="subject denominator">География (прак)<div class="teacher">Атанова З.А.</div><div class="auditorium">Аудитория: 503</div></div></div></div>
+            <div class="class-item" data-start="10:00" data-end="11:20"><div class="time"><span>10:00</span><span>11:20</span></div><div class="details"><div class="subject">Деловой иностранный язык (прак)</div><div class="teacher">ВАКАНТ</div><div class="auditorium">Аудитория: 503</div></div></div>
+            <div class="class-item alternating" data-start="11:30" data-end="12:50"><div class="time"><span>11:30</span><span>12:50</span></div><div class="details"><div class="subject numerator">Практический курс грамматики (англ.)<div class="teacher">ВАКАНТ</div><div class="auditorium">Аудитория: 503</div></div><div class="subject denominator">Практический курс грамматики (кит.)<div class="teacher">ВАКАНТ</div><div class="auditorium">Аудитория: 503</div></div></div></div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <b>Автор: Turatbekov Nurbol</b><br>
+        Если есть вопросы или ошибки, пишите в личку:<br>
+        <a href="https://t.me/ClayKG">Telegram</a> | 
+        <a href="https://wa.me/996709708408">WhatsApp</a>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const dateElement = document.getElementById('current-date');
+            const timeElement = document.getElementById('current-time');
+
+            // --- Анимация карточек при загрузке ---
+            document.querySelectorAll('.class-item').forEach((item, index) => {
+                item.style.animationDelay = `${index * 0.05}s`;
+            });
+            
+            function getWeekType(date) {
+                const startDate = new Date('2025-09-01T00:00:00');
+                const startDay = startDate.getDay() === 0 ? 6 : startDate.getDay() - 1;
+                const firstMonday = new Date(startDate.getTime() - startDay * 24 * 60 * 60 * 1000);
+                firstMonday.setHours(0,0,0,0);
+                const currentDate = new Date(date);
+                currentDate.setHours(0,0,0,0);
+                const diff = currentDate.getTime() - firstMonday.getTime();
+                const weeks = Math.floor(diff / (1000 * 60 * 60 * 24 * 7));
+                return (weeks % 2 === 0) ? 'numerator' : 'denominator';
+            }
+
+            function updateClock() {
+                const now = new Date();
+                const dateOptions = { day: 'numeric', month: 'long', year: 'numeric' };
+                dateElement.textContent = now.toLocaleDateString('ru-RU', dateOptions);
+                const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+                timeElement.textContent = now.toLocaleTimeString('ru-RU', timeOptions);
+            }
+
+            function updateScheduleState() {
+                const now = new Date();
+                const todayIndex = now.getDay();
+                const currentTime = now.getHours() * 60 + now.getMinutes();
+                const weekType = getWeekType(now);
+
+                document.querySelectorAll('.schedule-day').forEach(dayElem => {
+                    const day = parseInt(dayElem.dataset.day, 10);
+                    const dayTitle = dayElem.querySelector('.day-title');
+                    
+                    dayElem.querySelectorAll('.class-item.alternating').forEach(item => {
+                        const num = item.querySelector('.numerator');
+                        const den = item.querySelector('.denominator');
+                        num.classList.remove('inactive-week');
+                        den.classList.remove('inactive-week');
+                        if (weekType === 'numerator') den.classList.add('inactive-week');
+                        else num.classList.add('inactive-week');
+                    });
+
+                    if (day === todayIndex) {
+                        dayTitle.classList.add('is-today');
+                        let badge = dayTitle.querySelector('.badge');
+                        if (!badge) {
+                            badge = document.createElement('span');
+                            badge.className = 'badge';
+                            dayTitle.appendChild(badge);
+                        }
+                        badge.textContent = (weekType === 'numerator') ? 'Нечетная' : 'Четная';
+
+                        let nextClassFound = false;
+                        dayElem.querySelectorAll('.class-item').forEach(item => {
+                            const [startH, startM] = item.dataset.start.split(':').map(Number);
+                            const [endH, endM] = item.dataset.end.split(':').map(Number);
+                            const startTime = startH * 60 + startM;
+                            const endTime = endH * 60 + endM;
+
+                            item.classList.remove('current-class', 'next-class', 'past-class');
+
+                            if (currentTime >= startTime && currentTime < endTime) {
+                                item.classList.add('current-class');
+                            } else if (currentTime < startTime && !nextClassFound) {
+                                item.classList.add('next-class');
+                                nextClassFound = true;
+                            } else if (currentTime >= endTime) {
+                                item.classList.add('past-class');
+                            }
+                        });
+                    } else {
+                        dayTitle.classList.remove('is-today');
+                        const badge = dayTitle.querySelector('.badge');
+                        if (badge) badge.remove();
+                        dayElem.querySelectorAll('.class-item').forEach(item => {
+                             item.classList.remove('current-class', 'next-class', 'past-class');
+                        });
+                    }
+                });
+            }
+
+            updateClock();
+            updateScheduleState();
+            setInterval(updateClock, 1000);
+            setInterval(updateScheduleState, 60000);
+        });
+    </script>
+</body>
+</html>
